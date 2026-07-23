@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Votación Criolla Bonita y Juan Pueblo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc;
+color: #1e293b; max-width: 800px; margin: 0 auto; padding: 20px; }
+h1 { text-align: center; color: #0f172a; }
+.form-box { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding:
+15px; margin-bottom: 25px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.form-group { display: flex; gap: 10px; margin-top: 10px; }
+
+input, select, button { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+
+input[type="text"] { flex: 1; }
+button { background: #2563eb; color: white; border: none; cursor: pointer; font-weight:
+600; }
+button:hover { background: #1d4ed8; }
+.section-title { border-bottom: 2px solid #2563eb; padding-bottom: 5px; color: #1e3a8a;
+margin-top: 30px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:
+15px; margin-top: 15px; }
+.card { background: white; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;
+text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.card h3 { margin: 5px 0 10px 0; color: #334155; }
+.votos-count { font-size: 1.2em; font-weight: bold; color: #059669; margin: 8px 0; }
+</style>
+</head>
+<body>
+<h1> Concurso: Criolla Bonita y Juan Pueblo </h1>
+<!-- Formulario para registrar candidatos -->
+<div class="form-box">
+<h3 style="margin-top:0;"> Postular a un Candidato/a</h3>
+<div class="form-group">
+<input type="text" id="nuevoNombre" placeholder="Nombre completo del candidato/a" />
+<select id="nuevaCategoria">
+<option value="Criolla Bonita">Criolla Bonita</option>
+<option value="Juan Pueblo">Juan Pueblo</option>
+<select>
+<button onclick="agregarCandidato()">Agregar</button>
+</div>
+</div>
+<!-- Listados de votación -->
+<h2 class="section-title"> Categoría: Criolla Bonita</h2>
+<div id="container-criolla" class="grid"></div>
+<h2 class="section-title"> Categoría: Juan Pueblo</h2>
+<div id="container-juan" class="grid"></div>
+<script>
+const SUPABASE_URL = 'https://adhrlzqmawlgctqhdlmo.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wLJprnfKlv6vNWeSc4zcTg_CcBxAQ0D';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+async function cargarCandidatos() {
+const { data, error } = await _supabase.from('candidatos').select('*').order('votos',
+{ ascending: false });
+if (error) return console.error(error);
+const gridCriolla = document.getElementById('container-criolla');
+const gridJuan = document.getElementById('container-juan');
+gridCriolla.innerHTML = ''; gridJuan.innerHTML = '';
+data.forEach(c => {
+const html = `
+<div class="card">
+<h3>${c.nombre}</h3>
+<div class="votos-count">${c.votos} votos</div>
+<button onclick="votar(${c.id}, ${c.votos}, '${c.categoria}')">Votar</button>
+</div>
+`;
+if (c.categoria === 'Criolla Bonita') gridCriolla.innerHTML += html;
+else gridJuan.innerHTML += html;
+});
+}
+async function agregarCandidato() {
+const nombreInput = document.getElementById('nuevoNombre');
+const categoriaSelect = document.getElementById('nuevaCategoria');
+const nombre = nombreInput.value.trim();
+const categoria = categoriaSelect.value;
+if (!nombre) return alert('Por favor ingresa un nombre válido.');
+const { error } = await _supabase.from('candidatos').insert([{ nombre, categoria, votos:
+0 }]);
+if (error) {
+alert('Error al agregar el candidato');
+} else {
+nombreInput.value = '';
+cargarCandidatos();
+}
+}
+async function votar(id, votosActuales, categoria) {
+const keyVoto = 'voto_' + categoria.replace(/\s+/g, '_').toLowerCase();
+if (localStorage.getItem(keyVoto)) {
+alert(`Ya has registrado tu voto en la categoría ${categoria}.`);
+return;
+}
+const { error } = await _supabase.from('candidatos').update({ votos: votosActuales +
+1 }).eq('id', id);
+if (!error) {
+localStorage.setItem(keyVoto, 'true');
+alert('¡Voto registrado con éxito!');
+cargarCandidatos();
+}
+}
+cargarCandidatos();
+</script>
+</body>
+</html>
