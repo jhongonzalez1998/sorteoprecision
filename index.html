@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Votación Criolla Bonita y Juan Pueblo</title>
+  <title>Votación Criolla Bonita, Juan Pueblo y Amorfino</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,12 +41,12 @@
 
     .form-group { 
       display: flex; 
-      flex-direction: column; /* En móvil van uno debajo del otro */
+      flex-direction: column; 
       gap: 10px; 
     }
 
     input, select, button { 
-      width: 100%; /* Ocupan todo el ancho en móviles */
+      width: 100%; 
       padding: 12px 14px; 
       border: 1px solid #cbd5e1; 
       border-radius: 8px; 
@@ -81,10 +81,9 @@
       font-size: 1.25rem;
     }
 
-    /* Grilla auto-adaptable de candidatas/os */
+    /* Grilla auto-adaptable */
     .grid { 
       display: grid; 
-      /* Genera columnas automáticas: mínimo 140px, máximo 1fr */
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
       gap: 12px; 
     }
@@ -104,7 +103,7 @@
     .card h3 { 
       font-size: 1rem; 
       color: #334155; 
-      word-break: break-word; /* Para nombres largos */
+      word-break: break-word; 
       margin-bottom: 8px;
     }
 
@@ -115,11 +114,10 @@
       margin-bottom: 12px; 
     }
 
-    /* Estilos para pantallas medianas y grandes (Tablets / PC) */
     @media (min-width: 640px) {
       body { padding: 24px; }
       h1 { font-size: 2rem; }
-      .form-group { flex-direction: row; } /* Se alinean horizontalmente en PC */
+      .form-group { flex-direction: row; } 
       .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
       .card h3 { font-size: 1.1rem; }
     }
@@ -127,7 +125,7 @@
 </head>
 <body>
 
-  <h1>🎉 Concurso: Criolla Bonita y Juan Pueblo 🎉</h1>
+  <h1>🎉 Concurso de la Fiesta 🎉</h1>
 
   <!-- Formulario para agregar candidatos -->
   <div class="form-box">
@@ -137,6 +135,7 @@
       <select id="nuevaCategoria">
         <option value="Criolla Bonita">Criolla Bonita</option>
         <option value="Juan Pueblo">Juan Pueblo</option>
+        <option value="Amorfino">Amorfino</option> <!-- Nueva categoría añadida -->
       </select>
       <button onclick="agregarCandidato()">Agregar</button>
     </div>
@@ -149,9 +148,12 @@
   <h2 class="section-title">🎩 Categoría: Juan Pueblo</h2>
   <div id="container-juan" class="grid"></div>
 
+  <h2 class="section-title">📜 Categoría: Amorfino</h2> <!-- Nuevo contenedor -->
+  <div id="container-amorfino" class="grid"></div>
+
   <script>
     const SUPABASE_URL = 'https://adhrlzqmawlgctqhdlmo.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_wLJprnfKlv6vNWeSc4zcTg_CcBxAQ0D'; // Pega tu Publishable key completa
+    const SUPABASE_KEY = 'sb_publishable_wLJprnfKlv6vNWeSc4zcTg_CcBxAQ0D';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function cargarCandidatos() {
@@ -160,8 +162,11 @@
 
       const gridCriolla = document.getElementById('container-criolla');
       const gridJuan = document.getElementById('container-juan');
+      const gridAmorfino = document.getElementById('container-amorfino');
+
       gridCriolla.innerHTML = ''; 
       gridJuan.innerHTML = '';
+      gridAmorfino.innerHTML = '';
 
       data.forEach(c => {
         const html = `
@@ -173,8 +178,14 @@
             </div>
           </div>
         `;
-        if (c.categoria === 'Criolla Bonita') gridCriolla.innerHTML += html;
-        else gridJuan.innerHTML += html;
+
+        if (c.categoria === 'Criolla Bonita') {
+          gridCriolla.innerHTML += html;
+        } else if (c.categoria === 'Juan Pueblo') {
+          gridJuan.innerHTML += html;
+        } else if (c.categoria === 'Amorfino') {
+          gridAmorfino.innerHTML += html;
+        }
       });
     }
 
@@ -196,6 +207,7 @@
     }
 
     async function votar(id, votosActuales, categoria) {
+      // Genera una clave única en localStorage como: voto_amorfino, voto_criolla_bonita, etc.
       const keyVoto = 'voto_' + categoria.replace(/\s+/g, '_').toLowerCase();
       
       if (localStorage.getItem(keyVoto)) {
